@@ -6,39 +6,36 @@ import config
 # impute categorical variables
 def predict(data):
 
-    for var in config.CATEGORICAL_VARS:
-        data[var] = pf.impute_na(data, var, replacement='Missing')
-
     # extract first letter from cabin
-     for var in config.IMPUTATION_DICT
-         data[var] = data [var].str[0] 
+    data['cabin'] = pf.extract_cabin_letter(data, 'cabin')
 
     # impute NA categorical
     for var in config.CATEGORICAL_VARS:
-        data [var] = pf.impute_na(data, var, replacement='Missing'
-    
+        data [var] = pf.impute_na(data, var, replacement='Missing')
     
     # impute NA numerical
-    for var in config.NUMERCAL_TO_IMPUTE:
-        data[var]= pf.impute_na(X_train,var,replacement= 'Missing')
-    
+    for var in config.NUMERICAL_TO_IMPUTE:
+
+        #add missing indicator (0,1)
+        data[var + 'NA']= pf.add_missing_indicator(data,var)
+        # impute NA
+        data[var] = pf.impute_na(data, var, 
+               replacement = config.IMPUTATION_DICT[var])
     
     # Group rare labels
     for var in config.CATEGORICAL_VARS:
-    data[var] = pf.remove_rare_labels(data, var, config.FREQUENT_LABELS[var])
+        data[var] = pf.remove_rare_labels(data, var, config.FREQUENT_LABELS[var])
     
     # encode variables
-    for var in config.CATEGORICAL VARS 
-        data = data.copy()
-        data = pd.concat([data, pd.get_dummies(data[var], prefix=var, drop_first=drop_first)]
-        , axis=axis)
-        data.drop(labels=var, axis=1, inplace=True)
+    for var in config.CATEGORICAL_VARS:
+        data = pf.encode_categorical(data, var)
         
     # check all dummies were added
+    data = pf.check_dummy_variables(data, config.DUMMY_VARIABLES)
 
     
     # scale variables
-    data = pf.scale_features(data[config.FEATURES],
+    data = pf.scale_features(data,
                              config.OUTPUT_SCALER_PATH) 
     
     # make predictions

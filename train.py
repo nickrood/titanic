@@ -12,8 +12,7 @@ X_train, X_test, y_train, y_test = pf.divide_train_test(df, config.TARGET)
 
 
 # get first letter from cabin variable
-for var in config.IMPUTATION_DICT:
-    X_train[var] = X_train[var].str[0]    
+X_train['cabin'] = pf.extract_cabin_letter(X_train, 'cabin')    
 
 
 # impute categorical variables
@@ -21,38 +20,41 @@ for var in config.CATEGORICAL_VARS:
     X_train[var] = pf.impute_na(X_train, var, replacement='Missing')
 
 # impute numerical variable
-X_train[config.NUMERICAL_TO_IMPUTE] = pf.impute_na(X_train,
-       config.NUMERICAL_TO_IMPUTE,
-       replacement= 'Missing')
+for var in config.NUMERICAL_TO_IMPUTE:
+
+    #add missing indicator
+    X_train[var + '_NA'] = pf.add_missing_indicator(X_train, var)
+
+    #impute NA
+    X_train[var] = pf.impute_na(X_train, var, 
+           replacement = config.IMPUTATION_DICT[var])   
 
 # Group rare labels
 for var in config.CATEGORICAL_VARS:
-    X_train[var] = pf.remove_rare_labels(X_train, var, config.FREQUENT_LABELS[var])
+    X_train[var] = pf.remove_rare_labels(X_train, var,
+           config.FREQUENT_LABELS[var])
 
 
 # encode categorical variables
 for var in config.CATEGORICAL_VARS: 
-
-    X_train = X_train.copy()
-    X_train = pd.concat([X_train, pd.get_dummies(X_train[var], prefix=var, drop_first=drop_first)]
-    , axis=axis)
-    X_train.drop(labels=var, axis=1, inplace=True)
+    X_train = pf.encode_categorical(X_train, var)
+    
 
 
 # check all dummies were added
+X_train = pf.check_dummy_variables(X_train, config.DUMMY_VARIABLES)
 
 
 
 # train scaler and save
-scaler = pf.train_scaler(X_train[config.NUMERICAL_TO_IMPUTE],
-                         config.OUTPUT_SCALER_PATH)
+scaler = pf.train_scaler(X_train, config.OUTPUT_SCALER_PATH)
 
 # scale train set
-X_train = scaler.transform(X_train[config.NUMERICAL_TO_IMPUTE])
+X_train = scaler.transform(X_train)
 
 
 # train model and save
-pf.train_model(X_train, y_train), config.OUTPUT_MODEL_PATH
+pf.train_model(X_train, y_train, config.OUTPUT_MODEL_PATH)
 
 
 print('Finished training')
