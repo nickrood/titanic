@@ -94,7 +94,8 @@ def scale_features(df, output_path):
 def train_model(df, target, output_path):
     # train and save model
     # initalise the mode 
-    model = LogisticRegression(C=0.0005, random_state=0)
+    model = LogisticRegression(C=0.0005, random_state=0
+                               , solver='lbfgs')
 
     #train the model 
     model.fit(df,target)
