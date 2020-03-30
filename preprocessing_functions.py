@@ -35,7 +35,7 @@ def extract_cabin_letter(df, var):
 
 def add_missing_indicator(df, var):
     # function adds a binary missing value indicator
-    return df[var+'_NA']=np.where(df[var].isnull(), 1,0)
+    return np.where(df[var].isnull(), 1,0)
 
  #or np.where(df[var].isnull(), 1,0)?? and var+_'NA' in function? or abbove return?
     
@@ -51,7 +51,7 @@ def remove_rare_labels(df, var, frequent_ls):
     return np.where(df[var].isin(frequent_ls, df[var], 'Rare'))
 
 
-def encode_categorical(df, var, prefix=var, drop_first=True, axis=1):
+def encode_categorical(df, var, drop_first=True, axis=1):
     # adds one hot encoding variables and removes original categorical variable
     
     df = df.copy()
